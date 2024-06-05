@@ -10,8 +10,13 @@ async function hasAcessToOrg(
 ) {
   const user = await getUser(ctx, tokenIdentifier);
 
+  if (!user) {
+    console.log("User not found for token:", tokenIdentifier);
+    return false;
+  }
+
   const hasAccess =
-    user?.orgIds.includes(orgId) || user?.tokenIdentifier.includes(orgId);
+    user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
 
   if (!hasAccess) {
     throw new ConvexError("you do not have access to this org!");
@@ -24,6 +29,7 @@ export const createFile = mutation({
   args: { name: v.string(), orgId: v.string() },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
+    console.log("identity =>", identity);
 
     if (!identity) {
       throw new ConvexError("you must be logged into  upload a file!");
@@ -43,19 +49,23 @@ export const getFiles = query({
     if (!identity) {
       return [];
     }
-    const hasAccess = await hasAcessToOrg(
-      ctx,
-      args.orgId,
-      identity.tokenIdentifier
-    );
+    // console.log("Identity found:", identity);
+    // console.log("Query orgId:", args.orgId);
+    // const hasAccess = await hasAcessToOrg(
+    //   ctx,
+    //   args.orgId,
+    //   identity.tokenIdentifier
+    // );
 
-    if (!hasAccess) {
-      return [];
-    }
+    // if (!hasAccess) {
+    //   return [];
+    // }
 
-    return ctx.db
+    const files = await ctx.db
       .query("files")
       .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
+
+    return files;
   },
 });

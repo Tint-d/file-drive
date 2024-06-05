@@ -5,23 +5,25 @@ import { api } from "../../convex/_generated/api";
 import { useOrganization, useUser } from "@clerk/nextjs";
 
 export default function Home() {
-  const origanization = useOrganization();
+  const organization = useOrganization();
   const user = useUser();
+  // console.log(user);
 
-  const orgId = origanization.organization?.id ?? user.user?.id;
+  let orgId = null;
+  if (organization.isLoaded && user.isLoaded) {
+    orgId = organization.organization?.id ?? user.user?.id;
+  }
   const mutateAddFile = useMutation(api.files.createFile);
 
-  const files = useQuery(api.files.getFiles, {
-    orgId: origanization.organization?.id
-      ? (origanization.organization?.id as string)
-      : "skip",
-  });
+  const files = useQuery(api.files.getFiles, orgId ? { orgId } : "skip");
+
   const addTofile = () => {
+    if (!orgId) {
+      return;
+    }
     mutateAddFile({
-      name: "personal",
-      orgId: origanization.organization?.id
-        ? (origanization.organization?.id as string)
-        : "skip",
+      name: "another personal",
+      orgId,
     });
   };
 

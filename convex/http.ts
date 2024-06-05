@@ -23,12 +23,12 @@ http.route({
       switch (result.type) {
         case "user.created":
           await ctx.runMutation(internal.users.createUser, {
-            tokenIdentifier: result.data.id,
+            tokenIdentifier: `https://loving-katydid-56.clerk.accounts.dev|${result.data.id}`,
           });
           break;
         case "organizationMembership.created":
           await ctx.runMutation(internal.users.addOrgIdToUser, {
-            tokenIdentifier: result.data.public_user_data.user_id,
+            tokenIdentifier: `https://loving-katydid-56.clerk.accounts.dev|${result.data.public_user_data.user_id}`,
             orgId: result.data.organization.id,
           });
         default:
